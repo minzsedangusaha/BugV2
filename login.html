@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Login Key — Minzx</title>
+  <style>
+    body{font-family:system-ui,Arial;display:flex;align-items:center;justify-content:center;height:100vh;background:#07070b;color:#eaf2ff;margin:0}
+    .box{width:360px;background:#0f1116;padding:20px;border-radius:12px;border:1px solid rgba(255,255,255,0.02)}
+    h2{margin:0 0 8px 0;font-family: 'Orbitron',sans-serif}
+    input{width:100%;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:#0b0c10;color:#fff;margin-bottom:10px}
+    button{width:100%;padding:12px;border-radius:10px;border:none;background:linear-gradient(90deg,#ff2d6d,#ff6370);color:#0b0610;font-weight:700;cursor:pointer}
+    .muted{font-size:13px;color:#9aa0a6;margin-top:8px;text-align:center}
+    .error{background:#fff1f0;color:#a10000;padding:8px;border-radius:8px;margin-bottom:10px;text-align:center}
+    a{color:#9ad8ff;text-decoration:none}
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>Login dengan Key</h2>
+
+    <!-- show simple error messages -->
+    <div id="err" class="error" style="display:none"></div>
+
+    <form method="POST" action="/validate">
+      <input name="key" placeholder="Masukkan key (contoh: key1) atau NAME-YYYYMMDD" autocomplete="off" required />
+      <button type="submit">Login</button>
+    </form>
+
+    <div class="muted">Tambah key lewat Telegram: <code>/addkey NAME-YYYYMMDD</code></div>
+    <div class="muted" style="margin-top:6px">Setelah login, kamu akan diarahkan ke menu.</div>
+    <div style="margin-top:12px;text-align:center"><a href="/logout">Logout / Clear</a></div>
+  </div>
+
+  <script>
+    // show error from querystring if any
+    const qs = new URLSearchParams(location.search);
+    const err = qs.get('error');
+    if (err) {
+      const el = document.getElementById('err');
+      let text = '';
+      if (err === 'empty') text = 'Masukkan key terlebih dahulu.';
+      else if (err === 'invalid') text = 'Key tidak valid.';
+      else if (err === 'revoked') text = 'Key sudah dibatalkan (revoked).';
+      else if (err === 'expired') text = 'Key sudah expired.';
+      else if (err === 'unauth') text = 'Silakan login terlebih dahulu.';
+      else text = 'Terjadi error.';
+      el.textContent = text;
+      el.style.display = 'block';
+    }
+  </script>
+</body>
+</html>

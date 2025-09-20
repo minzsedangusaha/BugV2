@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Menu — Protected</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Poppins:wght@300;500&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#06060a;--muted:#9aa0a6;--accent1:#ff2d6d;--accent2:#ff6370}
+    *{box-sizing:border-box}
+    body{margin:0;background:linear-gradient(180deg,#05050a,#0a0a0f);color:#e6eef8;font-family:'Poppins',sans-serif;display:flex;align-items:center;justify-content:center;padding:28px}
+    .container{width:360px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));padding:18px;border-radius:16px}
+    .logo{height:120px;background:linear-gradient(180deg,#071026,#001226);border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+    .logo h1{font-family:'Orbitron',sans-serif;margin:0;font-size:28px;color:#9ad8ff}
+    label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+    .field{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:rgba(255,255,255,0.01);color:#fff;margin-bottom:10px}
+    .btn{width:100%;padding:12px;border-radius:10px;border:0;background:linear-gradient(90deg,var(--accent1),var(--accent2));color:#09060a;font-weight:700;cursor:pointer}
+    .log{background:rgba(255,255,255,0.02);padding:10px;border-radius:8px;font-family:monospace;font-size:13px;min-height:100px;color:#b9c3cc;white-space:pre-wrap;overflow:auto}
+    .row{display:flex;gap:8px}
+    .small{padding:8px;border-radius:8px;background:rgba(255,255,255,0.03);cursor:pointer;border:0;color:#fff}
+    footer{font-size:12px;color:#8a8f96;margin-top:10px;text-align:center}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo"><h1>MINZX PANEL</h1></div>
+
+    <label for="target">Nomor Target</label>
+    <input id="target" class="field" placeholder="6288900001111" inputmode="tel" />
+
+    <label for="type">Tipe</label>
+    <select id="type" class="field">
+      <option>force-close</option>
+      <option>x-crash</option>
+      <option>delay-extreme</option>
+    </select>
+
+    <button id="send" class="btn">[ＳＥＮＤ ＢＵＧ]</button>
+
+    <div style="height:10px"></div>
+
+    <div class="log" id="log">Log akan muncul disini...</div>
+
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button id="logout" class="small">Logout</button>
+      <button id="check" class="small">Check Token (server)</button>
+    </div>
+
+    <footer>Made in Minzx — Protected Area</footer>
+  </div>
+
+  <script>
+    const sendBtn = document.getElementById('send');
+    const target = document.getElementById('target');
+    const type = document.getElementById('type');
+    const log = document.getElementById('log');
+    const logoutBtn = document.getElementById('logout');
+    const checkBtn = document.getElementById('check');
+
+    function append(text){
+      const t = new Date().toLocaleTimeString();
+      log.textContent = `[${t}] ${text}\n` + log.textContent;
+    }
+
+    function validPhone(v){
+      return /^\+?\d[\d \-()]{6,20}$/.test(v);
+    }
+
+    sendBtn.addEventListener('click', ()=>{
+      const v = target.value.trim();
+      if(!validPhone(v)){
+        append('ERROR: Nomor tidak valid.');
+        return;
+      }
+      append(`Simulating -> ${v} [${type.value}]`);
+      sendBtn.disabled = true;
+      let p = 0;
+      const iv = setInterval(()=>{
+        p += Math.floor(Math.random()*20)+10;
+        if(p>100) p=100;
+        append('Progress: ' + p + '%');
+        if(p>=100){
+          clearInterval(iv);
+          append('Complete.');
+          sendBtn.disabled = false;
+        }
+      }, 600);
+    });
+
+    logoutBtn.addEventListener('click', async ()=>{
+      // call /logout to clear cookie then redirect to login
+      await fetch('/logout');
+      location.href = '/';
+    });
+
+    checkBtn.addEventListener('click', async ()=>{
+      append('Checking token with /menu (reloading protected page)...');
+      // simple check: try fetch /menu (we are on /menu already) so ask /api/validate-key? no.
+      // Instead we call /api/validate-key with no key to show server response pattern
+      try {
+        const r = await fetch('/api/validate-key', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ key: 'dummy' }) });
+        const j = await r.json().catch(()=>({}));
+        append('Server responded: ' + (j.error || JSON.stringify(j)));
+      } catch(e){
+        append('Error checking token: ' + e.message);
+      }
+    });
+
+    append('Protected menu ready.');
+  </script>
+</body>
+</html>
